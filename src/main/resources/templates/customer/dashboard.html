@@ -52,7 +52,10 @@
                 <!-- Place Order -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-1">📋 Place an Order</h2>
-                    <p class="text-sm text-gray-500 mb-4">Select items, then click Place Order.</p>
+                    <p class="text-sm text-gray-500 mb-4">
+                        Set the quantity for each item you want, then click <strong>Place Order</strong>.
+                        You can order more than one of the same item.
+                    </p>
 
                     <form th:action="@{/customer/order}" method="post">
                         <div th:if="${#lists.isEmpty(menu)}"
@@ -60,21 +63,25 @@
                             No menu items available right now.
                         </div>
 
-                        <div th:unless="${#lists.isEmpty(menu)}"
-                             class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-                            <label th:each="item : ${menu}" class="cursor-pointer select-none">
-                                <input type="checkbox" name="items"
-                                       th:value="${item.itemName}"
-                                       class="sr-only peer">
-                                <div class="flex justify-between items-center border border-gray-200
-                                            rounded-lg px-4 py-3 hover:border-orange-300 transition
-                                            peer-checked:border-orange-500 peer-checked:bg-orange-50
-                                            peer-checked:ring-1 peer-checked:ring-orange-400">
-                                    <span class="font-medium text-gray-800" th:text="${item.itemName}">Item</span>
-                                    <span class="text-orange-600 font-semibold"
-                                          th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">$0.00</span>
+                        <div th:unless="${#lists.isEmpty(menu)}" class="space-y-2 mb-5">
+                            <div th:each="item : ${menu}"
+                                 class="flex items-center justify-between border border-gray-200
+                                        rounded-lg px-4 py-3 hover:border-orange-300 transition">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-medium text-gray-800" th:text="${item.itemName}">Item</p>
+                                    <p class="text-sm text-orange-600 font-semibold"
+                                       th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">$0.00</p>
                                 </div>
-                            </label>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <label class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Qty</label>
+                                    <input type="hidden" name="item" th:value="${item.itemName}">
+                                    <input type="number" name="qty"
+                                           min="0" max="20" value="0"
+                                           class="w-16 border border-gray-300 rounded-lg px-2 py-1.5
+                                                  text-center font-semibold
+                                                  focus:outline-none focus:ring-2 focus:ring-orange-400">
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit"

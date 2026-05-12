@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -49,14 +50,27 @@ public class CustomerController {
     }
 
     @PostMapping("/order")
-    public String placeOrder(@RequestParam(required = false) List<String> items,
+    public String placeOrder(@RequestParam(name = "item",  required = false) List<String>  itemNames,
+                             @RequestParam(name = "qty",   required = false) List<Integer> qtys,
                              HttpSession session) {
         String username = requireRole(session);
         if (username == null) return "redirect:/";
-        if (items == null || items.isEmpty()) {
+
+        List<String> expanded = new ArrayList<>();
+        if (itemNames != null && qtys != null) {
+            int n = Math.min(itemNames.size(), qtys.size());
+            for (int i = 0; i < n; i++) {
+                Integer q = qtys.get(i);
+                if (q == null || q <= 0) continue;
+                for (int j = 0; j < q; j++) {
+                    expanded.add(itemNames.get(i));
+                }
+            }
+        }
+        if (expanded.isEmpty()) {
             return "redirect:/customer/dashboard?error=noitems";
         }
-        Order order = service.placeOrder(username, items);
+        Order order = service.placeOrder(username, expanded);
         return "redirect:/customer/dashboard?ordered=" + order.getOrderId();
     }
 
