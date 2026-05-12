@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — Cuesta Cougars Delivery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+
+        <div class="text-center mb-8">
+            <div class="text-5xl mb-3">🍔</div>
+            <h1 class="text-3xl font-bold text-gray-900">Cuesta Cougars</h1>
+            <p class="text-gray-500 mt-1 text-sm">Food Delivery System</p>
+        </div>
+
+        <div th:if="${error}"
+             class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-5 text-sm flex items-center gap-2">
+            <span>⚠️</span> <span th:text="${error}"></span>
+        </div>
+
+        <div th:if="${success}"
+             class="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 mb-5 text-sm flex items-center gap-2">
+            <span>✅</span> <span th:text="${success}"></span>
+        </div>
+
+        <form th:action="@{/login}" method="post" class="space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" name="username" required autocomplete="username"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900
+                              focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+                       placeholder="Enter your username">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" name="password" required autocomplete="current-password"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900
+                              focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+                       placeholder="Enter your password">
+            </div>
+            <button type="submit"
+                    class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700
+                           text-white font-semibold py-2.5 rounded-lg transition duration-150 text-base mt-1">
+                Sign In
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+            Don't have an account?
+            <a th:href="@{/register}" class="text-orange-500 hover:text-orange-600 font-medium">Create one</a>
+        </p>
+
+        <!-- Quick login hint for demo -->
+        <div class="mt-6 bg-gray-50 rounded-lg p-3 border border-gray-100 text-xs text-gray-500 space-y-1">
+            <p class="font-medium text-gray-600">Demo accounts:</p>
+            <p>Customer: <code class="bg-gray-100 px-1 rounded">bob / bob</code></p>
+            <p>Driver: <code class="bg-gray-100 px-1 rounded">mary / mary</code></p>
+            <p>Admin: <code class="bg-gray-100 px-1 rounded">rhoo / rhoo</code></p>
+        </div>
+
+    </div>
+</body>
+</html>

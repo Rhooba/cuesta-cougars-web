@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard — Cuesta Cougars</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Nav -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🚗</span>
+                <span class="font-bold text-lg text-gray-900">Cuesta Cougars</span>
+                <span class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-medium">Driver</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600 hidden sm:inline">
+                    <strong th:text="${name}">Driver</strong>
+                </span>
+                <a th:href="@{/logout}"
+                   class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition font-medium">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-4 py-8">
+
+        <!-- Flash messages -->
+        <div th:if="${msg == 'inprogress'}"
+             class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-4 py-3 mb-5 flex items-center gap-2 text-sm">
+            🚗 Order marked as picked up — you're on your way!
+        </div>
+        <div th:if="${msg == 'delivered'}"
+             class="bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-5 flex items-center gap-2 text-sm">
+            ✅ Order delivered! You're back in the driver pool.
+        </div>
+
+        <!-- Stats bar -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Your Rating</p>
+                <p class="text-3xl font-bold text-gray-900 mt-0.5">
+                    <span th:text="${#numbers.formatDecimal(driver.averageRating, 1, 2)}">0.00</span>
+                    <span class="text-xl text-amber-400">★</span>
+                </p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Status</p>
+                <span th:class="${driver.available} ? 'mt-1 inline-block text-sm px-3 py-1 rounded-full font-medium bg-green-100 text-green-700' :
+                                                       'mt-1 inline-block text-sm px-3 py-1 rounded-full font-medium bg-orange-100 text-orange-700'"
+                      th:text="${driver.available} ? 'Available' : 'On Delivery'">
+                </span>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Location</p>
+                <p class="text-sm font-medium text-gray-700 mt-0.5" th:text="${driver.currentLocation}">—</p>
+            </div>
+        </div>
+
+        <!-- Current Order -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">📦 Current Order</h2>
+
+            <!-- No order assigned -->
+            <div th:if="${driver.assignedOrder == null}"
+                 class="text-center py-10">
+                <div class="text-5xl mb-3">😴</div>
+                <p class="text-gray-500 font-medium">No order assigned yet.</p>
+                <p class="text-gray-400 text-sm mt-1">Sit tight — orders will be assigned automatically.</p>
+            </div>
+
+            <!-- Order assigned -->
+            <div th:unless="${driver.assignedOrder == null}">
+                <div class="bg-gray-50 rounded-lg p-4 mb-5 border border-gray-200">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-semibold text-gray-900 text-lg">
+                                Order #<span th:text="${driver.assignedOrder.orderId}"></span>
+                            </p>
+                            <p class="text-sm text-gray-500 mt-0.5">
+                                Customer: <span th:text="${driver.assignedOrder.customer.name}"></span>
+                            </p>
+                        </div>
+                        <span th:text="${driver.assignedOrder.status}"
+                              th:class="${driver.assignedOrder.status.name() == 'PICKED_UP'} ? 'text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700' :
+                                         'text-xs px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-700'">
+                        </span>
+                    </div>
+
+                    <!-- Items list -->
+                    <div class="border-t border-gray-200 pt-3 mt-3 space-y-1.5">
+                        <div th:each="item : ${driver.assignedOrder.items}"
+                             class="flex justify-between text-sm">
+                            <span class="text-gray-700" th:text="${item.itemName}"></span>
+                            <span class="text-gray-500" th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}"></span>
+                        </div>
+                        <div class="flex justify-between text-sm font-bold text-gray-900 border-t border-gray-200 pt-2 mt-2">
+                            <span>Total</span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(driver.assignedOrder.total, 1, 2)}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Delivery address -->
+                    <div class="mt-3 bg-orange-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                        <span class="text-orange-400">📍</span>
+                        <span class="text-sm text-orange-800 font-medium"
+                              th:text="${driver.assignedOrder.deliveryAddress}"></span>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex gap-3">
+                    <form th:action="@{/driver/progress}" method="post" class="flex-1"
+                          th:classappend="${driver.assignedOrder.status.name() != 'ACCEPTED' and driver.assignedOrder.status.name() != 'ASSIGNED'} ? 'opacity-50 pointer-events-none' : ''">
+                        <button type="submit"
+                                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold
+                                       py-2.5 rounded-lg transition text-sm">
+                            🚗 Mark Picked Up
+                        </button>
+                    </form>
+                    <form th:action="@{/driver/delivered}" method="post" class="flex-1"
+                          th:classappend="${driver.assignedOrder.status.name() != 'PICKED_UP'} ? 'opacity-50 pointer-events-none' : ''">
+                        <button type="submit"
+                                class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold
+                                       py-2.5 rounded-lg transition text-sm">
+                            ✅ Mark Delivered
+                        </button>
+                    </form>
+                </div>
+                <p class="text-xs text-gray-400 text-center mt-3">
+                    Pick up the order first, then mark it delivered when dropped off.
+                </p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
