@@ -3,8 +3,15 @@ package com.cuestacougars.service;
 import com.cuestacougars.model.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,13 +28,45 @@ public class DeliveryService {
     private FileManager fileManager;
     private AccountCreation accountCreation;
 
+    private static final String[] SEED_FILES = {
+        "menu.txt", "customers.txt", "drivers.txt", "admins.txt", "orders.txt"
+    };
+
     @PostConstruct
     public void init() {
+        ensureDataFiles();
         fileManager = new FileManager();
         globalData  = new GlobalData();
         globalData.setFileManager(fileManager);
         accountCreation = new AccountCreation(globalData, fileManager);
         fileManager.loadAll(globalData);
+    }
+
+    /**
+     * On startup, make sure a local "data/" directory exists with the seed files.
+     * Needed when running from a JAR (e.g. on Railway) where only the packaged
+     * classpath resources are available — FileManager reads/writes relative paths
+     * like "data/menu.txt", so we extract seeds there on first boot.
+     */
+    private void ensureDataFiles() {
+        try {
+            Path dataDir = Paths.get("data");
+            Files.createDirectories(dataDir);
+            for (String name : SEED_FILES) {
+                Path target = dataDir.resolve(name);
+                if (Files.exists(target)) continue;
+                ClassPathResource seed = new ClassPathResource("seed/" + name);
+                if (!seed.exists()) {
+                    Files.createFile(target);
+                    continue;
+                }
+                try (InputStream in = seed.getInputStream()) {
+                    Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to bootstrap data directory: " + e.getMessage());
+        }
     }
 
     @PreDestroy
